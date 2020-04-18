@@ -1,0 +1,191 @@
+/* https://afonsolopez.com/
+	Afonso Lopez
+	Pedregulho - Design System
+	v0.1 Beta | 20200417
+	License: none (public domain)
+*/
+:root {
+--black: #241C15;
+--darkGrey: #595959;
+--grey: rgba(55, 53, 47, 0.3);
+--lightGrey: #F4F4F7;
+--red: #A82A00;
+--blue: #0877A8;
+--purple: #6600FF;
+--green: #086729;
+--white: #FFFFFF;
+}
+html {
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, Ubuntu, sans-serif;
+font-size: 8px;
+background: var(--white);
+}
+h1 {
+font-style: normal;
+font-weight: 600;
+font-size: 24px;
+line-height: 140%;
+/*margin-top: 2rem*/
+}
+.button--reset {
+padding: 0;
+border: none;
+font: inherit;
+color: inherit;
+background-color: transparent;
+cursor: pointer;
+outline:none;
+-webkit-appearance: none;
+-moz-appearance: none;
+}
+.button {
+font-style: normal;
+font-weight: 500;
+font-size: 13px;
+line-height: 17px;
+box-sizing: border-box;
+border-radius: .75rem;
+transition-property: background-color;
+transition-duration: .2s;
+}
+.button--size--regular {
+padding: 1rem 2rem;
+}
+.button--size--full {
+padding: 0 2rem;
+width: 100%;
+height: 5rem;
+}
+.button--color--red {
+color: var(--red);
+background-color: #FFF2ED;
+border: 1px solid var(--red);
+}
+.button--color--red:hover {
+background-color: #E7DAD5;
+}
+.button--color--purple {
+color: var(--purple);
+background-color: #F3EDFF;
+border: 1px solid var(--purple);
+}
+.button--color--purple:hover {
+background-color: #DCD5E7;
+}
+.grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+grid-column-gap: 2rem;
+/*padding: 2rem;*/
+/*max-height: 100vh;*/
+}
+.grid__left{
+background-color: var(--white);
+padding-top: 2rem;
+padding-left: 4rem;
+padding-right: 2rem;
+padding-bottom: 2rem;
+}
+.list {
+overflow-y: scroll;
+max-height: calc(100vh - 14rem);
+margin-top: 5rem;
+}
+.list::-webkit-scrollbar {
+  display: none;
+}
+.listItem {
+width: 100%;
+height: auto;
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 1rem;
+/*transition-property: background-color;
+transition-duration: .2s;*/
+}
+/*.listItem:hover {
+background-color: #E7DAD5;
+}*/
+.listItem p {
+font-style: normal;
+font-weight: normal;
+font-size: 15px;
+line-height: 20px;
+color: var(--black);
+}
+.list .listItem:last-of-type {
+padding-bottom: 7rem;
+/*background-color: cyan;*/
+}
+.listItem__info p  {
+
+}
+.listItem__info p:last-child {
+color: var(--grey);
+}
+.listItem__remove p {
+transition: color .2s linear;
+}
+.listItem__remove p:hover {
+cursor: pointer;
+color: var(--red);
+}
+.sendFiles__box {
+background-color: var(--white);
+position: fixed;
+width: 100%;
+height: 9rem;
+bottom: 0;
+max-width: 41.25vw;
+display: flex;
+justify-content: center;
+align-items: center;
+}
+/*RIGHT GRID*/
+.grid__right{
+background-color: var(--lightGrey);
+height: calc(100vh - 4rem);
+padding-top: 2rem;
+padding-left: 2rem;
+padding-right: 2rem;
+padding-bottom: 2rem;
+}
+.bundleSizer {
+width: calc(100% - 2rem);
+height: calc(100% - 11rem);
+display: flex;
+justify-content: center;
+align-items: center;
+flex-direction: column;
+/*background-color: blue;*/
+}
+.bundleSizer div:first-of-type p {
+font-style: normal;
+font-weight: 500;
+font-size: 48px;
+line-height: 62px;
+color: var(--purple);
+width: 100%;
+height: 100%;
+}
+.bundleSizer div:last-of-type p {
+font-style: normal;
+font-weight: normal;
+font-size: 15px;
+line-height: 20px;
+color: var(--black);
+width: 100%;
+height: 100%;
+}
+.compressFiles__box {
+background-color: var(--lightGrey);
+position: fixed;
+width: 100%;
+height: 9rem;
+bottom: 0;
+max-width: 41.25vw;
+display: flex;
+justify-content: center;
+align-items: center;
+}

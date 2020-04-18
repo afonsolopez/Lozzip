@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Lozzip</title>
+  <link rel="stylesheet" href="reset.css">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <div class="grid">
+    <div class="grid__left">
+      <h1>Files Listing</h1>
+      <div class="list" id="list">
+    <!-- <div class="listItem">
+          <div class="listItem__info">
+            <p>file-one.jpeg</p>
+            <p>4.8902 mb</p>
+          </div>
+          <div class="listItem__remove">
+            <p>&#10006;</p>
+          </div>
+        </div> -->
+      </div>
+      <div class="sendFiles__box">
+        <button class="button--reset button button--size--full button--color--red" onclick="preSelectFiles()"> Select Files</button>
+      </div>
+    </div>
+    <div class="grid__right">
+      <h1>Bundle Size</h1>
+      <div class="bundleSizer">
+        <div>
+          <p id="bundleNumber">0.00mb</p>
+        </div>
+        <div>
+          <p id="bundleNumberLength">0 files</p>
+        </div>
+      </div>
+      <div class="compressFiles__box">
+        <button class="button--reset button button--size--full button--color--purple" onclick="createZip()">Make Bundle</button>
+      </div>
+    </div>
+  </div>
+  <script>
+  var fs = require("fs");
+  // var shell = require('shelljs');
+  var AdmZip = require('adm-zip');
+  const { dialog } = require('electron').remote;
+   //Read path
+	// console.log(shell.pwd().stdout);
+  var fileList = [];
+  var fileListBundle = [];
+  var listItemDeleted = false;
+  // console.log(fileList.length)
+  // ##### Animations ##### 
+  // Fade in when the list is loaded
+  var keyframesFadeIn = [
+  { opacity: 0 },
+  { opacity: 1 }
+  ];
+  // Fade out and in when the list is updated
+  var keyframesFadeOutIn = [
+  { opacity: 1 },
+  { opacity: 0 },
+  { opacity: 1 },
+  ];
+	// Get a file name with extension form path
+	function getFileName(path) {
+   return path.slice((path.lastIndexOf("/") - 1 >>> 0) + 2);
+ }
+	// Get a file extension with extension form path
+	function getFileExt(path) {
+   return path.slice((path.lastIndexOf(".") - 1 >>> 0) + 2);
+ }
+  //Calculate file size
+  function getFileSize(path) {
+    const stats = fs.statSync(path);
+    const fileSizeInBytes = stats.size;
+  //Convert the file size to megabytes
+  return fileSizeInBytes / 1000000.0;
+}
+// ##### Start files choosing #####
+//Conditional to show dialog before you reselect your files or let you select normaly
+function preSelectFiles() {
+  if (fileList.length > 0 ) {
+    dialog.showMessageBox({
+      title: 'Wait a minute friend!',
+      buttons: ['Cancel', 'Reselect Files'],
+      type: 'none',
+      message: "Making a new file(s) selection will remove you're actual one."
+    }).then(result => {
+      console.log(result)
+      switch(result.response) {
+        case 0:
+        return false
+        break;
+        case 1:
+        fileList = [];
+        fileListBundle = [];
+        listItemDeleted = false;
+        selectFiles() 
+        break;
+      };
+    }).catch(err => {
+      console.log(err)
+    })
+  } else if (fileList.length <= 0 ) {
+    selectFiles() 
+  }
+}
+// Onclick function to select files with the OS dialog
+function selectFiles() {
+  //Open file selection box
+  dialog.showOpenDialog({
+    properties: ['openFile', 'multiSelections']
+  //Execute actions with the selected files
+}).then(result => {
+// console.log(result.canceled)
+// console.log(result.filePaths)
+// console.log(fs.statSync(result.filePaths[0]));
+//Clean listing array
+if (fileList.length > 0 ) {
+ fileList = [];
+ fileListBundle = [];
+} 
+// Function to generate items list and push then to the file list array
+function convertFilePaths() {
+  // Clean list lodes before continue
+  document.getElementById("list").innerHTML = ``;
+  // Loop thru dialog itens and convert then into one new object
+  result.filePaths.forEach(newFileItem);
+  function newFileItem(item) {
+    var fileItem = {
+      path: item,
+      format: getFileName(item),
+      size: getFileSize(item)
+    }
+    fileList.push(fileItem)
+  }
+}
+// Run the convert file paths function
+convertFilePaths()
+//Create and add objects on the files list array, thru loop at the file paths list array
+function calculateZipBundle(fileList) {
+  //Create the zip bundle array
+  var zipBundleArray = [];
+  //Create the zip bundle array with file list data
+  fileList.map(createZipBundleArray);
+  function createZipBundleArray(item) {
+    zipBundleArray.push(item.size);
+  }
+  //Sum all zip bundle items
+  function sumZipBundleArray(initial, item) {
+    return initial + item;
+  }
+  //Create the string to be injected into the bundle number element on HTML
+  var bundleNumber = "";
+  //Conditional  to define how the bundle number will de displayed (mb, gb or tb)
+  if (zipBundleArray.length > 0) {
+    //Call the sum zip bundke array fucntion
+    var bundleNumberSize = zipBundleArray.reduce(sumZipBundleArray)
+        //Test if bundle number will be displayed by mb
+        if (bundleNumberSize <= 999) {
+          bundleNumber = bundleNumberSize.toFixed(2) + "mb"
+        //Test if bundle number will be displayed by gb
+      } else if (bundleNumberSize >= 1000 && bundleNumberSize <= 999999) {
+        bundleNumber = (bundleNumberSize /1000).toFixed(2) + "gb"
+        //Test if bundle number will be displayed by tb
+      } else if (bundleNumberSize >= 1000000 && bundleNumberSize <= 999999999) {
+        bundleNumber = (bundleNumberSize /1000000).toFixed(2) + "tb"
+        //Test if bundle number will be displayed by something higher than tb
+      } else if (bundleNumberSize >= 999999999) {
+        bundleNumber = ":("
+      }
+    //Inject the bundle number conditional result into HTML
+    document.getElementById("bundleNumber").innerHTML = bundleNumber;
+  } else if (zipBundleArray.length === 0) {
+    document.getElementById("bundleNumber").innerHTML = "0.00mb";
+  }
+  //Conditional  to define how the bundle number length will de displayed (file of files)
+  if (zipBundleArray.length === 1) {
+    document.getElementById("bundleNumberLength").innerHTML = zipBundleArray.length + " file";
+  } else if (zipBundleArray.length >= 1 || zipBundleArray.length < 1) {
+    document.getElementById("bundleNumberLength").innerHTML = zipBundleArray.length + " files";
+  }
+  //Check the zip bundle array actual content
+  console.log(zipBundleArray)
+}
+//Check the files list array after adding new objects into it
+console.log(fileList);
+//Create a function to get all objects from the list array and inject them into HTML
+function injectFileItem(fileList) {
+// console.log(result.filePaths);
+//Loop the ijection for each element on the list array
+fileList.forEach(listGenerator);
+function listGenerator(item) {
+  //Create the main div element to encapsulate everything
+  var divAll = document.createElement("div");
+  //Create the div element for all info elements
+  var divInfo = document.createElement("div");
+  //Create the firts p element
+  var pFile = document.createElement("p");
+  var c1 = document.createTextNode(item.format); 
+  pFile.appendChild(c1);
+  //Create the second p element
+  var pSize = document.createElement("p");
+  var c2 = document.createTextNode(item.size); 
+  pSize.appendChild(c2);
+  //Inject both p elements inside information div
+  divInfo.appendChild(pFile);
+  divInfo.appendChild(pSize);
+  //Create div element for the remove button
+  var divRemove = document.createElement("div");
+  //Create the p eleemnte to carry the ✖ character
+  var pX = document.createElement("p");
+  var cX = document.createTextNode("✖");
+  pX.appendChild(cX);
+  //Inject p element inside remove div
+  divRemove.appendChild(pX);
+  //Inject all two divs into the main div
+  divAll.appendChild(divInfo).className = "listItem__info";
+  divAll.appendChild(divRemove).className = "listItem__remove";
+  //Inject also the onclick for each item list
+  divAll.appendChild(divRemove).onclick = function() { 
+    console.log(item.path);
+  //Filter the file listing without the removed object
+  fileList = fileList.filter(function( obj ) {
+    return obj.path !== item.path;
+  });
+    //Item has been deleted => mark as true
+    listItemDeleted = true;
+    //Clean the  actual list to let it ready to receive the new filtered list
+    document.getElementById("list").innerHTML = ``;
+    console.log(fileList);
+    fileListBundle = fileList;
+    //Run the injection code to HTML again with the new filtered list
+    injectFileItem(fileList);
+  };
+  //Write the item div inside the list div
+  document.getElementById("list").appendChild(divAll).className = "listItem";
+  if (!listItemDeleted) {
+    console.log(fileList.length);
+    // Insert animation for new itens list
+    document.getElementById("list").appendChild(divAll).animate(keyframesFadeIn, 1000);
+  } else if (listItemDeleted ) {
+    console.log(fileList.length);
+    // insert animation from updates into the list
+    document.getElementById("list").appendChild(divAll).animate(keyframesFadeOutIn  , 300);;
+  }
+}
+// Calculate the zip bundle
+calculateZipBundle(fileList);
+fileListBundle = fileList;
+}
+//Run the injection code to HTML
+injectFileItem(fileList);
+}).catch(err => {
+  console.log(err)
+})
+} 
+// ##### End of file choosing #####
+function createZip() {
+  // Open dialog to save zip bundle
+  dialog.showOpenDialog({
+    properties: ['openDirectory']
+  }).then(result => {
+  // Check if the open dialog was canceled
+  console.log(result.canceled);
+  // Check the selected folder path
+  console.log(result.filePaths);
+//Give to bundle folder path the same value as the path from dialog box selection
+var bundleFolderPath = result.filePaths;
+// Conditional to only execute the compressFiles func if the open dialog was not canceled
+if (!result.canceled) {
+  compressFiles()
+} 
+// Function to compress the file
+function compressFiles() {
+// creating archives
+var zip = new AdmZip();
+// Check file list bundle
+console.log(fileListBundle);
+// Loop thru all file list bundle array and add them to the zip
+fileListBundle.forEach(addFileToZip);
+function addFileToZip(item) {
+  zip.addLocalFile(item.path);
+}
+// Generate zip bundle name 
+function bundleNameDate() {
+  var date = new Date();
+  return date.getFullYear() + "_" + date.getMonth() + "_" + date.getDate() + "_" + date.getHours() + "_" + date.getMinutes() + "_" + date.getSeconds()
+}
+// Write the files to an zip file
+zip.writeZip(/*target file name*/ bundleFolderPath + "/my_bundle_" + bundleNameDate() + ".zip");
+      // Show the dialog box on finish
+      dialog.showMessageBox({
+        title: "It's done!",
+        buttons: ['Finish'],
+        type: 'none',
+        message: "You're bundle it's done on: " + bundleFolderPath
+      })
+    }
+  }).catch(err => {
+    console.log(err)
+  })
+}    
+</script>
+</body>
+</html>
