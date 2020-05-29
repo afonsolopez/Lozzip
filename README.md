@@ -7,7 +7,7 @@
 
 OS X:
 
-[Click here to download.](/out/make/zip/darwin/x64/Lozzip-darwin-x64-1.0.0.zip)
+[Click here to download.](https://github.com/afonsolopez/Lozzip/raw/master/out/make/zip/darwin/x64/Lozzip-darwin-x64-1.0.0.zip)
 
 ## Development setup
 
